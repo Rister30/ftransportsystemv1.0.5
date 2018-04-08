@@ -34,6 +34,7 @@ end
 
 net.Receive( "FHS:Player:OpenMenu", function()	
 	local fts_lang = FTransportSystem.Language[FTS_BaseLang]
+	local self = net.ReadEntity()
 	
 	local SimpleBaseFrame = vgui.Create("DFrame")
     SimpleBaseFrame:SetSize(ScrW() / 3.5, ScrH() / 1.5)
@@ -130,6 +131,7 @@ net.Receive( "FHS:Player:OpenMenu", function()
 				
 				net.Start("FTransportSystem:DestinationPlayer:Freeze")
 					net.WriteUInt( 4, 32 )
+					net.WriteEntity( self )
 				net.SendToServer()
 				
 				timer.Simple(19.9, function()
@@ -139,10 +141,12 @@ net.Receive( "FHS:Player:OpenMenu", function()
 				timer.Simple(20, function()
 					net.Start("FTransportSystem:SwitchServer:Destination")
 						net.WriteTable( v )
+						net.WriteEntity( self )
 					net.SendToServer()
 					
 					net.Start("FTransportSystem:DestinationPlayer:Freeze")
 						net.WriteUInt( 8, 32 )
+						net.WriteEntity( self )
 					net.SendToServer()
 				end )
 				
