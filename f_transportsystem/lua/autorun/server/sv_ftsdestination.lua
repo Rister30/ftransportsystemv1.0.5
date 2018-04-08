@@ -32,21 +32,21 @@ end)
 ---------------------------------------------------------------------------]]
 
 net.Receive("FTransportSystem:SwitchServer:Destination", function( len, ply )
-	local v = net.ReadTable()
-	local self = net.ReadEntity()
+    local v = net.ReadUInt(32)
+    local self = net.ReadEntity()
 	
-	if ply:GetPos():DistToSqr(self:GetPos())<200 then 
+    if ply:GetPos():DistToSqr(self:GetPos())<200 then
 	
-		if ply:Alive() && IsValid( ply ) && ply:IsPlayer() then
-			
-			ply:addMoney(-v.Price)
-			ply:SetPos(v.VectorPos)
-			
-			DarkRP.notify(ply, 0, 5, v.Notify .. "(" .. v.Price .. FTS.ServerCurrency .. ")")
+        if ply:Alive() && IsValid( ply ) && ply:IsPlayer() then
 		
-		end
+            ply:addMoney(-TaxiDestinations[v].Price)
+            ply:SetPos(TaxiDestinations[v].VectorPos)
+			
+            DarkRP.notify(ply, 0, 5, TaxiDestinations[v].Notify .. "(" .. TaxiDestinations[v].Price .. FTS.ServerCurrency .. ")")
+			
+        end
 		
-	end 
+    end
 	
 end )
 
@@ -117,10 +117,13 @@ end )
 ---------------------------------------------------------------------------]]
 
 hook.Add( "PlayerSay", "FTransportSystem:Player:Say", function( ply, text )
-	if text == FTS.AdminInterfaceCommand then
+	if text == FTS.AdminInterfaceCommand then	
 		if not FTS.AllowedAdmins[ ply:GetUserGroup() ] then return end 
 
 		net.Start("FTransportSystem:SwitchClient:User:Admin")
 		net.Send(ply)	
+		
 	end
 end)
+
+
