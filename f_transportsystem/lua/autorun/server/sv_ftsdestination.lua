@@ -33,15 +33,20 @@ end)
 
 net.Receive("FTransportSystem:SwitchServer:Destination", function( len, ply )
 	local v = net.ReadTable()
-
-	if ply:Alive() && IsValid( ply ) && ply:IsPlayer() then
+	local self = net.ReadEntity()
+	
+	if ply:GetPos():DistToSqr(self:GetPos())<200 then 
+	
+		if ply:Alive() && IsValid( ply ) && ply:IsPlayer() then
 			
-		ply:addMoney(-v.Price)
-		ply:SetPos(v.VectorPos)
+			ply:addMoney(-v.Price)
+			ply:SetPos(v.VectorPos)
 			
-		DarkRP.notify(ply, 0, 5, v.Notify .. "(" .. v.Price .. FTS.ServerCurrency .. ")")
+			DarkRP.notify(ply, 0, 5, v.Notify .. "(" .. v.Price .. FTS.ServerCurrency .. ")")
 		
-	end
+		end
+		
+	end 
 	
 end )
 
@@ -85,17 +90,22 @@ end )
 
 net.Receive("FTransportSystem:DestinationPlayer:Freeze", function( len, ply )
 	local admin_number = net.ReadUInt( 8 ) 
-
-	if ply:Alive() && IsValid( ply ) && ply:IsPlayer() then 
+	local self = net.ReadEntity()
 	
-		if admin_number == 4 then
+	if ply:GetPos():DistToSqr(self:GetPos())<200 then 
+	
+		if ply:Alive() && IsValid( ply ) && ply:IsPlayer() then 
+	
+			if admin_number == 4 then
 		
-			ply:Freeze( true )
+				ply:Freeze( true )
 			
-		elseif admin_number == 8 then
+			elseif admin_number == 8 then
 		
-			ply:Freeze( false )
+				ply:Freeze( false )
 			
+			end 
+		
 		end 
 		
 	end 
