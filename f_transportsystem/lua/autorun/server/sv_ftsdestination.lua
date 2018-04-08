@@ -88,9 +88,9 @@ net.Receive("FTransportSystem:SwitchServer:AdminAction", function( len, ply )
 				if FTS.AllowedAdmins[ ply:GetUserGroup() ] then
 				
 					net.Start("FTransportSystem:SwitchClient:DrawHUDPaint")
-						net.WriteString(text)
-						net.WriteString(author)
-					net.Broadcast()
+						net.WriteString( text )
+						net.WriteString( author )
+					net.Send( v )
 					
 				end 
 				
