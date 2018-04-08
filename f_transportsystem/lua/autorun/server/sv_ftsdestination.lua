@@ -35,18 +35,22 @@ net.Receive("FTransportSystem:SwitchServer:Destination", function( len, ply )
     local v = net.ReadUInt(32)
     local self = net.ReadEntity()
 	
-    if ply:GetPos():DistToSqr(self:GetPos())<200 then
+	if (ply:getDarkRPVar("money") > TaxiDestinations[v].Price) then 
 	
-        if ply:Alive() && IsValid( ply ) && ply:IsPlayer() then
+		if ply:GetPos():DistToSqr(self:GetPos())<200 then
 		
-            ply:addMoney(-TaxiDestinations[v].Price)
-            ply:SetPos(TaxiDestinations[v].VectorPos)
+			if ply:Alive() && IsValid( ply ) && ply:IsPlayer() then
 			
-            DarkRP.notify(ply, 0, 5, TaxiDestinations[v].Notify .. "(" .. TaxiDestinations[v].Price .. FTS.ServerCurrency .. ")")
+				ply:addMoney(-TaxiDestinations[v].Price)
+				ply:SetPos(TaxiDestinations[v].VectorPos)
+				
+				DarkRP.notify(ply, 0, 5, TaxiDestinations[v].Notify .. "(" .. TaxiDestinations[v].Price .. FTS.ServerCurrency .. ")")
+				
+			end
 			
-        end
+		end
 		
-    end
+	end 
 	
 end )
 
@@ -125,5 +129,3 @@ hook.Add( "PlayerSay", "FTransportSystem:Player:Say", function( ply, text )
 		
 	end
 end)
-
-
