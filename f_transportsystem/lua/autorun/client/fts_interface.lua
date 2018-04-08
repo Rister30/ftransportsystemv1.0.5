@@ -140,9 +140,10 @@ net.Receive( "FHS:Player:OpenMenu", function()
 				
 				timer.Simple(20, function()
 					net.Start("FTransportSystem:SwitchServer:Destination")
-						net.WriteTable( v )
+						net.WriteUInt(k, 32)
 						net.WriteEntity( self )
 					net.SendToServer()
+
 					
 					net.Start("FTransportSystem:DestinationPlayer:Freeze")
 						net.WriteUInt( 8, 32 )
