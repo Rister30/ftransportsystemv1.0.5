@@ -35,20 +35,24 @@ net.Receive("FTransportSystem:SwitchServer:Destination", function( len, ply )
     local v = net.ReadUInt(32)
     local self = net.ReadEntity()
 	
-	if (ply:getDarkRPVar("money") > TaxiDestinations[v].Price) then 
+	if self:GetModel() == FTS.Model then 
 	
-		if ply:GetPos():DistToSqr(self:GetPos())<200 then
+		if (ply:getDarkRPVar("money") > TaxiDestinations[v].Price) then 
 		
-			if ply:Alive() && IsValid( ply ) && ply:IsPlayer() then
+			if ply:GetPos():DistToSqr(self:GetPos())<200 then
 			
-				ply:addMoney(-TaxiDestinations[v].Price)
-				ply:SetPos(TaxiDestinations[v].VectorPos)
+				if IsValid( ply ) && ply:IsPlayer() && ply:Alive() then
 				
-				DarkRP.notify(ply, 0, 5, TaxiDestinations[v].Notify .. "(" .. TaxiDestinations[v].Price .. FTS.ServerCurrency .. ")")
+					ply:addMoney(-TaxiDestinations[v].Price)
+					ply:SetPos(TaxiDestinations[v].VectorPos)
+					
+					DarkRP.notify(ply, 0, 5, TaxiDestinations[v].Notify .. "(" .. TaxiDestinations[v].Price .. FTS.ServerCurrency .. ")")
+					
+				end
 				
 			end
 			
-		end
+		end 
 		
 	end 
 	
@@ -60,7 +64,7 @@ net.Receive("FTransportSystem:SwitchServer:AdminAction", function( len, ply )
 	local author = net.ReadString( 16 )
 	local fts_lang = FTransportSystem.Language[FTS_BaseLang]
 	
-	if ply:Alive() && IsValid( ply ) && ply:IsPlayer() then
+	if IsValid( ply ) && ply:IsPlayer() && ply:Alive() then
 	
 		for _,v in pairs(player.GetAll()) do 
 			if number_saved == 2 then 
@@ -80,11 +84,15 @@ net.Receive("FTransportSystem:SwitchServer:AdminAction", function( len, ply )
 				end 
  				
 			elseif number_saved == 4 then
-			
-				net.Start("FTransportSystem:SwitchClient:DrawHUDPaint")
-					net.WriteString(text)
-					net.WriteString(author)
-				net.Broadcast()
+				
+				if FTS.AllowedAdmins[ ply:GetUserGroup() ] then
+				
+					net.Start("FTransportSystem:SwitchClient:DrawHUDPaint")
+						net.WriteString(text)
+						net.WriteString(author)
+					net.Broadcast()
+					
+				end 
 				
 			end 
 		end 
@@ -96,20 +104,24 @@ net.Receive("FTransportSystem:DestinationPlayer:Freeze", function( len, ply )
 	local admin_number = net.ReadUInt( 8 ) 
 	local self = net.ReadEntity()
 	
-	if ply:GetPos():DistToSqr(self:GetPos())<200 then 
+	if self:GetModel() == FTS.Model then 
 	
-		if ply:Alive() && IsValid( ply ) && ply:IsPlayer() then 
-	
-			if admin_number == 4 then
+		if ply:GetPos():DistToSqr(self:GetPos())<200 then 
 		
-				ply:Freeze( true )
+			if ply:Alive() && IsValid( ply ) && ply:IsPlayer() then 
+		
+				if admin_number == 4 then
 			
-			elseif admin_number == 8 then
-		
-				ply:Freeze( false )
+					ply:Freeze( true )
+				
+				elseif admin_number == 8 then
+			
+					ply:Freeze( false )
+				
+				end 
 			
 			end 
-		
+			
 		end 
 		
 	end 
@@ -122,10 +134,14 @@ end )
 
 hook.Add( "PlayerSay", "FTransportSystem:Player:Say", function( ply, text )
 	if text == FTS.AdminInterfaceCommand then	
-		if not FTS.AllowedAdmins[ ply:GetUserGroup() ] then return end 
+		if not FTS.AllowedAdmins[ ply:GetUserGroup() ] then return end
+		
+		if IsValid( ply ) && ply:IsPlayer() && ply:Alive() then 
 
-		net.Start("FTransportSystem:SwitchClient:User:Admin")
-		net.Send(ply)	
+			net.Start("FTransportSystem:SwitchClient:User:Admin")
+			net.Send(ply)	
+		
+		end 
 		
 	end
 end)
