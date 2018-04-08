@@ -1,0 +1,116 @@
+
+--[[-------------------------------------------------------------------------
+	Initialize Network
+---------------------------------------------------------------------------]]
+
+util.AddNetworkString("FTransportSystem:SwitchClient:User:Admin")
+util.AddNetworkString("FTransportSystem:SwitchClient:DrawHUDPaint")
+util.AddNetworkString("FTransportSystem:SwitchServer:Destination")
+util.AddNetworkString("FTransportSystem:SwitchServer:AdminAction")
+util.AddNetworkString("FTransportSystem:DestinationPlayer:Freeze")
+
+--[[-------------------------------------------------------------------------
+	Initialize
+---------------------------------------------------------------------------]]
+
+hook.Add( "Initialize", "FTransportSystem:Initialize:Serverside", function()
+	if not file.IsDir( "ftransportsystem", "DATA" ) then
+		file.CreateDir( "ftransportsystem" )
+	end
+
+	if not file.IsDir( "ftransportsystem/admin", "DATA" ) then
+		file.CreateDir( "ftransportsystem/admin" )
+	end
+	
+	if not file.Exists( "ftransportsystem/admin/taxivariables.txt", "DATA" ) then	
+		file.Write( "ftransportsystem/admin/taxivariables.txt", FTransportSystem.Language[FTS_BaseLang].Value1 ) 
+	end 
+end)
+
+--[[-------------------------------------------------------------------------
+	Functions 
+---------------------------------------------------------------------------]]
+
+net.Receive("FTransportSystem:SwitchServer:Destination", function( len, ply )
+	local v = net.ReadTable()
+
+	if ply:Alive() && IsValid( ply ) && ply:IsPlayer() then
+			
+		ply:addMoney(-v.Price)
+		ply:SetPos(v.VectorPos)
+			
+		DarkRP.notify(ply, 0, 5, v.Notify .. "(" .. v.Price .. FTS.ServerCurrency .. ")")
+		
+	end
+	
+end )
+
+net.Receive("FTransportSystem:SwitchServer:AdminAction", function( len, ply )
+	local number_saved = net.ReadUInt( 8 ) 
+	local text = net.ReadString( 32 ) 
+	local author = net.ReadString( 16 )
+	local fts_lang = FTransportSystem.Language[FTS_BaseLang]
+	
+	if ply:Alive() && IsValid( ply ) && ply:IsPlayer() then
+	
+		for _,v in pairs(player.GetAll()) do 
+			if number_saved == 2 then 
+				
+				if FTS.AllowedAdmins[ ply:GetUserGroup() ] then 
+					file.Write( "ftransportsystem/admin/taxivariables.txt", fts_lang.Value1 ) 
+				
+					DarkRP.notify(v, 2, 5, fts_lang.ActivedNotify)
+				end
+				
+			elseif number_saved == 3 then
+			
+				if FTS.AllowedAdmins[ ply:GetUserGroup() ] then 
+					file.Write( "ftransportsystem/admin/taxivariables.txt", fts_lang.Value2 )
+				
+					DarkRP.notify(v, 2, 5, fts_lang.DisabledNotify)
+				end 
+ 				
+			elseif number_saved == 4 then
+			
+				net.Start("FTransportSystem:SwitchClient:DrawHUDPaint")
+					net.WriteString(text)
+					net.WriteString(author)
+				net.Broadcast()
+				
+			end 
+		end 
+		
+	end
+end )
+
+net.Receive("FTransportSystem:DestinationPlayer:Freeze", function( len, ply )
+	local admin_number = net.ReadUInt( 8 ) 
+
+	if ply:Alive() && IsValid( ply ) && ply:IsPlayer() then 
+	
+		if admin_number == 4 then
+		
+			ply:Freeze( true )
+			
+		elseif admin_number == 8 then
+		
+			ply:Freeze( false )
+			
+		end 
+		
+	end 
+	
+end )
+
+--[[-------------------------------------------------------------------------
+	Player Say 
+---------------------------------------------------------------------------]]
+
+hook.Add( "PlayerSay", "FTransportSystem:Player:Say", function( ply, text )
+	if text == FTS.AdminInterfaceCommand then
+		if not FTS.AllowedAdmins[ ply:GetUserGroup() ] then return end 
+
+		net.Start("FTransportSystem:SwitchClient:User:Admin")
+		net.Send(ply)	
+	end
+end)
